@@ -44,8 +44,23 @@ func main() {
 		sslConfig.CACertFile = opts.Kafka.SSLCACert
 	} else {
 		sslConfig.EnableSSL = false
+		if opts.Kafka.SSLCACert != "" {
+			sslConfig.CACertFile = opts.Kafka.SSLCACert
+		}
 	}
-	exporter.ConnectKafka(opts.Kafka.Host, opts.Kafka.Topic, sslConfig)
+	
+	saslConfig := &KafkaSaslConfig{}
+	if opts.Kafka.SaslMechanism != "" {
+		log.Debugf("Configuring SASL")
+		saslConfig.SecurityProtocol = "SASL_SSL"
+		saslConfig.SaslMechanism = opts.Kafka.SaslMechanism
+		saslConfig.ScramUsername = opts.Kafka.ScramUsername
+		saslConfig.ScramPassword = opts.Kafka.ScramPassword
+	} else {
+		saslConfig.SecurityProtocol = "plaintext"
+	}
+
+	exporter.ConnectKafka(opts.Kafka.Host, opts.Kafka.Topic, sslConfig, saslConfig)
 	defer exporter.kafkaWriter.Close()
 
 	// daemon mode

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	kafka "github.com/segmentio/kafka-go"
+	scram "github.com/segmentio/kafka-go/sasl/scram"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -34,6 +35,13 @@ type (
 		CertFile   string
 		KeyFile    string
 		CACertFile string
+	}
+
+	KafkaSaslConfig struct {
+		SecurityProtocol string
+		SaslMechanism string
+		ScramUsername string
+		ScramPassword string
 	}
 
 	AlertmanagerEntry struct {
@@ -88,8 +96,9 @@ func (e *AlertmanagerKafkaExporter) Init() {
 	prometheus.MustRegister(e.prometheus.alertsSuccessful)
 }
 
-func (e *AlertmanagerKafkaExporter) ConnectKafka(host string, topic string, sslConfig *KafkaSSLConfig) {
+func (e *AlertmanagerKafkaExporter) ConnectKafka(host string, topic string, sslConfig *KafkaSSLConfig, saslConfig *KafkaSaslConfig) {
 	dialer := kafka.DefaultDialer
+	log.Debugf("Starting Kafka connection")
 	if sslConfig.EnableSSL {
 		cert, err := tls.LoadX509KeyPair(sslConfig.CertFile, sslConfig.KeyFile)
 		if err != nil {
@@ -116,6 +125,46 @@ func (e *AlertmanagerKafkaExporter) ConnectKafka(host string, topic string, sslC
 			RootCAs:      caCertPool,
 		}
 	}
+
+	if strings.Contains(saslConfig.SecurityProtocol, "SASL") {
+		log.Debugf("Configuring SASL")
+		if strings.Contains(saslConfig.SaslMechanism, "SCRAM") {
+			log.Debugf("Configuring SCRAM")
+			if saslConfig.ScramUsername == "" || saslConfig.ScramPassword == "" {
+				log.Fatalf("Username and password have to be provided if Sasl mechanism is scram")
+			}			
+
+			
+			if ! sslConfig.EnableSSL {
+
+				if sslConfig.CACertFile == "" {
+					sslConfig.CACertFile = "/etc/ssl/certs/ca-certificates.crt"
+				}
+				
+				caCertPEM, err := ioutil.ReadFile(sslConfig.CACertFile)
+				if err != nil {
+					log.Fatalf("cannot read SSL CA certificate file %s: %s", sslConfig.CACertFile, err)
+				}
+				
+				caCertPool := x509.NewCertPool()
+				if ok := caCertPool.AppendCertsFromPEM([]byte(caCertPEM)); !ok {
+					log.Fatalf("cannot load SSL CA certificates from file %s: %s", sslConfig.CACertFile, err)
+				}
+
+				log.Infof("configured client-side SSL: cacert=%s", sslConfig.CACertFile)
+				dialer.TLS = &tls.Config{
+					RootCAs:      caCertPool,
+				}
+			}
+
+			mechanism, err := scram.Mechanism(scram.SHA512, saslConfig.ScramUsername, saslConfig.ScramPassword)
+			dialer.SASLMechanism = mechanism
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+
 	e.kafkaWriter = kafka.NewWriter(kafka.WriterConfig{
 		Brokers: strings.Split(host, ","),
 		Topic:   topic,

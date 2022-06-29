@@ -22,6 +22,9 @@ type (
 			SSLCert   string `long:"kafka.ssl.cert"                env:"KAFKA_SSL_CERT"                       description:"Kafka client SSL certificate file" required:"false"`
 			SSLKey    string `long:"kafka.ssl.key"                env:"KAFKA_SSL_KEY"                       description:"Kafka client SSL key file" required:"false"`
 			SSLCACert string `long:"kafka.ssl.cacert"                env:"KAFKA_SSL_CACERT"                       description:"Kafka server CA certificate file" required:"false"`
+			SaslMechanism string `long:"kafka.sasl.mechanism"                env:"KAFKA_SASL_MECHANISM"                       description:"Kafka server authentication mechanism when sasl is used" required:"false"`
+			ScramUsername string `long:"kafka.scram.username"                env:"KAFKA_SCRAM_USERNAME"                       description:"Kafka server username when scram is used on sasl" required:"false"`
+			ScramPassword string `long:"kafka.scram.password"                env:"KAFKA_SCRAM_PASSWORD"                       description:"Kafka server user password when scram is used on sasl" required:"false"`
 		}
 
 		// general options
