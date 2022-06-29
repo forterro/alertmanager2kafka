@@ -25,18 +25,21 @@ Usage:
   alertmanager2kafka [OPTIONS]
 
 Application Options:
-      --debug             debug mode [$DEBUG]
-  -v, --verbose           verbose mode [$VERBOSE]
-      --log.json          Switch log output to json format [$LOG_JSON]
-      --kafka.host=       Kafka host, eg. kafka-0:9092 [$KAFKA_HOST]
-      --kafka.topic=      Kafka topic, eg. alertmanager [$KAFKA_TOPIC]
-      --kafka.ssl.cert=   Kafka client SSL certificate file [$KAFKA_SSL_CERT]
-      --kafka.ssl.key=    Kafka client SSL key file [$KAFKA_SSL_KEY]
-      --kafka.ssl.cacert= Kafka server CA certificate file [$KAFKA_SSL_CACERT]
-      --bind=             Server address (default: :9097) [$SERVER_BIND]
+      --debug                   debug mode [$DEBUG]
+  -v, --verbose                 verbose mode [$VERBOSE]
+      --log.json                Switch log output to json format [$LOG_JSON]
+      --kafka.host=             Kafka host, eg. kafka-0:9092 [$KAFKA_HOST]
+      --kafka.topic=            Kafka topic, eg. alertmanager [$KAFKA_TOPIC]
+      --kafka.ssl.cert=         Kafka client SSL certificate file [$KAFKA_SSL_CERT]
+      --kafka.ssl.key=          Kafka client SSL key file [$KAFKA_SSL_KEY]
+      --kafka.ssl.cacert=       Kafka server CA certificate file [$KAFKA_SSL_CACERT]
+      --kafka.sasl.mechanism=   Kafka server authentication [$KAFKA_SASL_MECHANISM]
+      --kafka.scram.username=   Kafka server username when sasl mechanism is scram [$KAFKA_SCRAM_USERNAME]
+      --kafka.scram.password=   Kafka server user password when sasl mechanism is scram [$KAFKA_SCRAM_PASSWORD]
+      --bind=                   Server address (default: :9097) [$SERVER_BIND]
 
 Help Options:
-  -h, --help              Show this help message
+  -h, --help                    Show this help message
 
 ```
 
